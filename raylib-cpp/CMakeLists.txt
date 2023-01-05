@@ -9,9 +9,19 @@ set(PROJECT_NAME starter CACHE BOOL "")
 set(PROJECT_VERSION 1.0)
 project(${PROJECT_NAME} VERSION ${PROJECT_VERSION})
 
+if (EMSCRIPTEN)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s USE_GLFW=3 -s ASSERTIONS=1 -s WASM=1 -s ASYNCIFY")
+    set(CMAKE_EXECUTABLE_SUFFIX ".html") # This line is used to set your executable to build with the emscripten html template so that you can directly open it.
+endif ()
+
 ##############################################################
 
-find_package(raylib REQUIRED)
+message(STATUS "Downloading raylib library")
+include(FetchContent)
+set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+# set(PLATFORM PLATFORM_ANDROID CACHE BOOL "")
+FetchContent_Declare(raylib URL https://github.com/raysan5/raylib/archive/refs/tags/4.2.0.zip)
+FetchContent_MakeAvailable(raylib)
 
 message(STATUS "Downloading imgui library")
 include(FetchContent)
@@ -41,15 +51,16 @@ set(PROJECT_INCLUDE
     ${rlimgui_SOURCE_DIR})
 
 set(PROJECT_LIBRARY
-    ${raylib_LIBRARY})
+    raylib)
 
-set(PROJECT_DEFINITION "")
+set(PROJECT_DEFINITION
+    RESOURCE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/resource/")
 
 ##############################################################
 
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_INCLUDE})
-target_link_libraries(${PROJECT_NAME} PUBLIC ${PROJECT_LIBRARY})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_LIBRARY})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${PROJECT_DEFINITION})
 
 # copy/symlink resource folder
