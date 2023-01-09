@@ -1,5 +1,6 @@
 build
 build-*
 .cache
+key.keystore
 
 compile_commands.json
